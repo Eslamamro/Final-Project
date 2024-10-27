@@ -1,0 +1,7 @@
+django
+pymysql
+python-dotenv
+pillow
+djangorestframework
+markdown
+django-filter
