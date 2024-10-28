@@ -1,19 +1,18 @@
-# from rest_framework import permissions
-# from .models import Teacher,Student
-#
-#
-# class IsTeacher(permissions.BasePermission):
-#     def has_permission(self, request, view):
-#         data = request.Teacher
-#         teacher = Teacher.objects.get(User=data)
-#         if teacher.isTeacher:
-#             return True
+from rest_framework import permissions
+from .models import Teacher, Student
+from django.contrib import messages
 
-# class IsStudent(permissions.BasePermission):
-#     def has_permission(self, request, view):
-#         user = request.user
-#         student = Student.objects.get(user=user)
-#         if student.isStudent:
-#             return True
-#         else:
-#             return False
+class IsTeacher(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        teacher = Teacher.objects.get(user=user)
+        if teacher:
+            return True
+
+
+class IsStudent(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        student = Student.objects.get(user=user)
+        if student:
+            return True

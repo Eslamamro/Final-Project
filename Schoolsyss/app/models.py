@@ -23,9 +23,10 @@ class Teacher(models.Model):
         ('French', 'French'),
     )
     subject = models.CharField(choices=Subject_choices, max_length=50)
+    students = models.ManyToManyField('Student', blank=True, related_name='teachers')
 
     def __str__(self):
-        return self.user.first_name + ' ' + self.user.last_name
+        return self.first_name + ' ' + self.last_name
 
     class Meta:
         verbose_name = 'Teacher'
@@ -41,26 +42,11 @@ class Student(models.Model):
     student_class = models.CharField(max_length=4)
 
     def __str__(self):
-        return self.user.first_name + ' ' + self.user.last_name
+        return self.first_name + ' ' + self.last_name
 
     class Meta:
         verbose_name = 'Student'
 
 
 class Course(models.Model):
-    course_choices = (
-        ('Engineering', 'Engineering'),
-        ('Computer  Sciences', 'Computer  Sciences'),
-        ('Medical', 'Medical'),
-        ('Pharmacy', 'Pharmacy'),
-        ('Dentistry', 'Dentistry'),
-    )
-    name = models.CharField(max_length=50, choices=course_choices)
-    credit_hours = models.IntegerField()
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'Course'
-        verbose_name_plural = 'Courses'
+    pass
