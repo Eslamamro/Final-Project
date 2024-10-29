@@ -2,6 +2,7 @@ from rest_framework import permissions
 from .models import Teacher, Student
 from django.contrib import messages
 
+
 class IsTeacher(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user

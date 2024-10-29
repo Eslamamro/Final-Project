@@ -5,18 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fd352d75-ae28-480a-b049-7e726200ffb4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/Final-Project.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/FinalProject.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Schoolsyss/app/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/Schoolsyss/app/admin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Schoolsyss/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/Schoolsyss/app/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Schoolsyss/app/permisions.py" beforeDir="false" afterPath="$PROJECT_DIR$/Schoolsyss/app/permisions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Schoolsyss/app/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/Schoolsyss/app/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Schoolsyss/app/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/Schoolsyss/app/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Schoolsyss/app/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/Schoolsyss/app/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Schoolsyss/src/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/Schoolsyss/src/settings.py" afterDir="false" />
     </list>
@@ -71,6 +64,14 @@
       <workItem from="1730066510511" duration="5444000" />
       <workItem from="1730077342105" duration="2771000" />
       <workItem from="1730124084761" duration="3764000" />
+      <workItem from="1730132531557" duration="139000" />
+      <workItem from="1730211058334" duration="2249000" />
+      <workItem from="1730226298222" duration="2998000" />
+      <workItem from="1730230087566" duration="22000" />
+      <workItem from="1730230149360" duration="20000" />
+      <workItem from="1730230205504" duration="27000" />
+      <workItem from="1730231830976" duration="10000" />
+      <workItem from="1730235934260" duration="4093000" />
     </task>
     <servers />
   </component>

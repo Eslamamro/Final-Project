@@ -47,6 +47,3 @@ class Student(models.Model):
     class Meta:
         verbose_name = 'Student'
 
-
-class Course(models.Model):
-    pass

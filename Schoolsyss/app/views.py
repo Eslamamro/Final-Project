@@ -9,6 +9,7 @@ from rest_framework.authtoken.models import Token
 from . models import Teacher, Student, User
 from rest_framework import status
 from .permisions import IsTeacher, IsStudent
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.contrib import messages
 # Create your views here.
 
@@ -18,157 +19,295 @@ class UsersList(APIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request):
-        users = User.objects.all()
-        serializer = CreateUserSerializer(users, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            users = User.objects.all()
+            serializer = CreateUserSerializer(users, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except PermissionDenied:
+            return Response({'error': 'You do not have permission to view this resource'},
+                            status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
-        data = request.data
-        serializer = CreateUserSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'User Created Successfully'}, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            data = request.data
+            serializer = CreateUserSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'User Created Successfully'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied:
+            return Response({'error': 'You do not have permission to view this resource'}, status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserDetails(APIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request, pk):
-        user = User.objects.get(id=pk)
-        serializer = CreateUserSerializer(user)
-        return Response(serializer.data,  status=status.HTTP_200_OK)
+        try:
+            user = User.objects.get(id=pk)
+            serializer = CreateUserSerializer(user)
+            return Response(serializer.data,  status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied:
+            return Response({'error': 'You do not have permission to view this resource'}, status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk):
-        user = User.objects.get(id=pk)
-        serializer = CreateUserSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'User Updated Successfully'}, status=status.HTTP_200_OK)
+        try:
+            user = User.objects.get(id=pk)
+            serializer = CreateUserSerializer(user, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'User Updated Successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied:
+            return Response({'error': 'You do not have permission to update this user'},
+                            status=status.HTTP_403_FORBIDDEN)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def patch(self, request, pk):
-        user = User.objects.get(id=pk)
-        serializer = CreateUserSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'User Updated Successfully'}, status=status.HTTP_200_OK)
+        try:
+            user = User.objects.get(id=pk)
+            serializer = CreateUserSerializer(user, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'User Updated Successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied:
+            return Response({'error': 'You do not have permission to view this resource'}, status=status.HTTP_403_FORBIDDEN)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, pk):
-        user = User.objects.get(id=pk)
-        user.delete()
-        return Response({'message': 'User Deleted Successfully'}, status=status.HTTP_200_OK)
+        try:
+            user = User.objects.get(id=pk)
+            user.delete()
+            return Response({'message': 'User Deleted Successfully'}, status=status.HTTP_200_OK)
+        except PermissionDenied:
+            return Response({'error': 'You do not have permission to view this resource'}, status=status.HTTP_403_FORBIDDEN)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class StudentsList(APIView):
-    permission_classes = [IsAuthenticated, IsTeacher, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsTeacher]
 
     def get(self, request):
-        student = Student.objects.all()
-        serializer = StudentSerializer(student, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            user = request.user
+            teacher = Teacher.objects.get(user=user)
+            students = teacher.students.all()
+            serializer = StudentSerializer(students, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except PermissionDenied:
+            return Response({'error': 'You do not have permission to create a user'}, status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request):
-        data = request.data
-        serializer = StudentSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'User Created Successfully'}, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            data = request.data
+            serializer = StudentSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'User Created Successfully'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied:
+            return Response({'error': 'You do not have permission to create a user'}, status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class StudentDetails(APIView):
-    permission_classes = [IsAuthenticated, IsStudent, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsStudent]
 
     def get(self, request, pk):
-        user_id = request.user.id
-        student = Student.objects.get(id=pk)
-        if user_id == student.user.id:
-            serializer = StudentSerializer(student)
-            return Response(serializer.data,  status=status.HTTP_200_OK)
-        else:
-            return Response({'massage': 'No Do Not Have The Permission TO Access This Page'},
-                            status=status.HTTP_403_FORBIDDEN)
+        try:
+            user_id = request.user.id
+            student = Student.objects.get(id=pk)
+            if user_id == student.user.id:
+                serializer = StudentSerializer(student)
+                return Response(serializer.data,  status=status.HTTP_200_OK)
+            else:
+                raise PermissionDenied("You do not have permission to view this resource")
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
     def put(self, request, pk):
-        user_id = request.user.id
-        student = Student.objects.get(id=pk)
-        if user_id == student.user.id:
-            serializer = UpdateStudentSerializer(student, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({'message': 'User Updated Successfully'}, status=status.HTTP_200_OK)
+        try:
+            user_id = request.user.id
+            student = Student.objects.get(id=pk)
+            if user_id == student.user.id:
+                serializer = UpdateStudentSerializer(student, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response({'message': 'User Updated Successfully'}, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                raise PermissionDenied("You do not have permission to view this resource")
+        except PermissionDenied:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
     def patch(self, request, pk):
-        user_id = request.user.id
-        student = Student.objects.get(id=pk)
-        if user_id == student.user.id:
-            serializer = UpdateStudentSerializer(student, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({'message': 'User Updated Successfully'}, status=status.HTTP_200_OK)
+        try:
+            user_id = request.user.id
+            student = Student.objects.get(id=pk)
+            if user_id == student.user.id:
+                serializer = UpdateStudentSerializer(student, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response({'message': 'User Updated Successfully'}, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                raise PermissionDenied("You do not have permission to view this resource")
+        except PermissionDenied:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, pk):
-        student = Student.objects.get(id=pk)
-        student.delete()
-        return Response({'message': 'User Deleted Successfully'}, status=status.HTTP_200_OK)
+        try:
+            student = Student.objects.get(id=pk)
+            student.delete()
+            return Response({'message': 'User Deleted Successfully'}, status=status.HTTP_200_OK)
+        except PermissionDenied:
+            return Response({'error': 'You do not have permission to view this resource'}, status=status.HTTP_403_FORBIDDEN)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class TeachesList(APIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request):
-        teacher = Teacher.objects.all()
-        serializer = TeacherSerializer(teacher, many=True)
-        return Response(serializer.data,  status=status.HTTP_200_OK)
+        try:
+            teacher = Teacher.objects.all()
+            serializer = TeacherSerializer(teacher, many=True)
+            return Response(serializer.data,  status=status.HTTP_200_OK)
+        except PermissionDenied:
+            return Response({'error': 'You do not have permission to create a user'}, status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request):
-        data = request.data
-        print('***************************', data)
-        serializer = TeacherSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'User Created Successfully'}, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            data = request.data
+            serializer = TeacherSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'User Created Successfully'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except PermissionDenied:
+            return Response({'error': 'You do not have permission to create a user'}, status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class TeacherDetails(APIView):
-    permission_classes = [IsAuthenticated, IsTeacher, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsTeacher]
 
     def get(self, request, pk):
-        user_id = request.user.id
-        teacher = Teacher.objects.get(id=pk)
-        if user_id == teacher.user.id:
-            serializer = UpdateTeacherSerializer(teacher)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response({'massage': 'No Do Not Have The Permission TO Access This Page'},
-                            status=status.HTTP_403_FORBIDDEN)
+        try:
+            user_id = request.user.id
+            print('**************************', user_id)
+            teacher = Teacher.objects.get(id=pk)
+            if user_id == teacher.user.id:
+                serializer = UpdateTeacherSerializer(teacher)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+               raise PermissionDenied("You do not have permission to view this resource")
+        except PermissionDenied:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk):
-        user_id = request.user.id
-        teacher = Teacher.objects.get(id=pk)
-        if user_id == teacher.user.id:
-            serializer = UpdateTeacherSerializer(teacher, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({'message': 'User Updated Successfully'}, status=status.HTTP_200_OK)
+        try:
+            user_id = request.user.id
+            teacher = Teacher.objects.get(id=pk)
+            if user_id == teacher.user.id:
+                serializer = UpdateTeacherSerializer(teacher, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response({'message': 'User Updated Successfully'}, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            raise PermissionDenied("You do not have permission to view this resource")
+        except PermissionDenied:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     def patch(self, request, pk):
-        user_id = request.user.id
-        teacher = Teacher.objects.get(id=pk)
-        if user_id == teacher.user.id:
-            serializer = UpdateTeacherSerializer(teacher, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({'message': 'User Updated Successfully'}, status=status.HTTP_200_OK)
+        try:
+            user_id = request.user.id
+            teacher = Teacher.objects.get(id=pk)
+            if user_id == teacher.user.id:
+                serializer = UpdateTeacherSerializer(teacher, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response({'message': 'User Updated Successfully'}, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            raise PermissionDenied("You do not have permission to view this resource")
+        except PermissionDenied:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, pk):
-        teacher = Teacher.objects.get(id=pk)
-        teacher.delete()
-        return Response({'message': 'User Deleted Successfully'}, status=status.HTTP_200_OK)
+        try:
+            teacher = Teacher.objects.get(id=pk)
+            teacher.delete()
+            return Response({'message': 'User Deleted Successfully'}, status=status.HTTP_200_OK)
+        except PermissionDenied:
+            return Response({'error': 'You do not have permission to view this resource'}, status=status.HTTP_403_FORBIDDEN)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class Login(APIView):

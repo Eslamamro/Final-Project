@@ -27,14 +27,16 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("This username is already taken.")
+                raise serializers.ValidationError("This username is already taken.")
 
         if len(value) < 3:
-            raise serializers.ValidationError("Username must be at least 3 characters long.")
+                raise serializers.ValidationError("Username must be at least 3 characters long.")
         if not value.isalnum():
-            raise serializers.ValidationError("Username can only contain letters and numbers.")
+                raise serializers.ValidationError("Username can only contain letters and numbers.")
 
         return value
+
+
 
 
 class TeacherSerializer(serializers.ModelSerializer):
