@@ -106,17 +106,28 @@ class UserDetails(APIView):
 
 
 class StudentsList(APIView):
-    permission_classes = [IsAuthenticated, IsTeacher]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request):
         try:
             user = request.user
-            teacher = Teacher.objects.get(user=user)
-            students = teacher.students.all()
-            serializer = StudentSerializer(students, many=True)
+            if user.is_superuser:
+                students = Student.objects.all()
+                serializer = StudentSerializer(students, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                teacher = Teacher.objects.get(user=user)
+                students = teacher.students.all()
+                serializer = StudentSerializer(students, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except PermissionDenied:
-            return Response({'error': 'You do not have permission to create a user'}, status=status.HTTP_403_FORBIDDEN)
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        except Teacher.DoesNotExist:
+            return Response({'error': 'You are Not a teacher You can not view this page'}, status=status.HTTP_404_NOT_FOUND)
+        except IsAdminUser:
+            students = Student.objects.all()
+            serializer = StudentSerializer(students, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -142,7 +153,7 @@ class StudentDetails(APIView):
         try:
             user_id = request.user.id
             student = Student.objects.get(id=pk)
-            if user_id == student.user.id:
+            if user_id == student.user.id or request.user.is_superuser:
                 serializer = StudentSerializer(student)
                 return Response(serializer.data,  status=status.HTTP_200_OK)
             else:
@@ -159,7 +170,7 @@ class StudentDetails(APIView):
         try:
             user_id = request.user.id
             student = Student.objects.get(id=pk)
-            if user_id == student.user.id:
+            if user_id == student.user.id or request.user.is_superuser:
                 serializer = UpdateStudentSerializer(student, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
@@ -181,7 +192,7 @@ class StudentDetails(APIView):
         try:
             user_id = request.user.id
             student = Student.objects.get(id=pk)
-            if user_id == student.user.id:
+            if user_id == student.user.id or request.user.is_superuser:
                 serializer = UpdateStudentSerializer(student, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
@@ -199,9 +210,10 @@ class StudentDetails(APIView):
 
     def delete(self, request, pk):
         try:
-            student = Student.objects.get(id=pk)
-            student.delete()
-            return Response({'message': 'User Deleted Successfully'}, status=status.HTTP_200_OK)
+            if request.user.is_superuser:
+                student = Student.objects.get(id=pk)
+                student.delete()
+                return Response({'message': 'User Deleted Successfully'}, status=status.HTTP_200_OK)
         except PermissionDenied:
             return Response({'error': 'You do not have permission to view this resource'}, status=status.HTTP_403_FORBIDDEN)
         except User.DoesNotExist:
@@ -246,7 +258,7 @@ class TeacherDetails(APIView):
             user_id = request.user.id
             print('**************************', user_id)
             teacher = Teacher.objects.get(id=pk)
-            if user_id == teacher.user.id:
+            if user_id == teacher.user.id or request.user.is_superuser:
                 serializer = UpdateTeacherSerializer(teacher)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
@@ -262,7 +274,7 @@ class TeacherDetails(APIView):
         try:
             user_id = request.user.id
             teacher = Teacher.objects.get(id=pk)
-            if user_id == teacher.user.id:
+            if user_id == teacher.user.id or request.user.is_superuser:
                 serializer = UpdateTeacherSerializer(teacher, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
@@ -282,7 +294,7 @@ class TeacherDetails(APIView):
         try:
             user_id = request.user.id
             teacher = Teacher.objects.get(id=pk)
-            if user_id == teacher.user.id:
+            if user_id == teacher.user.id or request.user.is_superuser:
                 serializer = UpdateTeacherSerializer(teacher, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
@@ -299,9 +311,10 @@ class TeacherDetails(APIView):
 
     def delete(self, request, pk):
         try:
-            teacher = Teacher.objects.get(id=pk)
-            teacher.delete()
-            return Response({'message': 'User Deleted Successfully'}, status=status.HTTP_200_OK)
+            if request.user.is_superuser:
+                teacher = Teacher.objects.get(id=pk)
+                teacher.delete()
+                return Response({'message': 'User Deleted Successfully'}, status=status.HTTP_200_OK)
         except PermissionDenied:
             return Response({'error': 'You do not have permission to view this resource'}, status=status.HTTP_403_FORBIDDEN)
         except User.DoesNotExist:

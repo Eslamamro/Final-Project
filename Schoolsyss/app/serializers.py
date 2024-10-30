@@ -45,7 +45,7 @@ class TeacherSerializer(serializers.ModelSerializer):
 
         model = Teacher
         fields = [
-            'id',
+            'user',
             'first_name',
             'last_name',
             'age',
@@ -79,7 +79,7 @@ class UpdateTeacherSerializer(serializers.ModelSerializer):
         fields += read_only_fields
 
     def validate_phoneNumber(self, value):
-        if not value.isdigit() or len(value) == 11:
+        if not value.isdigit() or len(value) != 11:
             raise serializers.ValidationError("Enter a valid phone number.")
         return value
 
@@ -91,23 +91,22 @@ class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = [
-            'id',
+            'user',
             'first_name',
             'last_name',
             'age',
             'parent_phoneNumber',
             'address',
             'student_class',
-
         ]
 
     def validate_age(self, value):
-        if value < 6 or value > 19 or not value.isdigit():
+        if not value.isdigit() or int(value) < 6 or int(value) > 19:
             raise serializers.ValidationError("Age must be between 6 and 19.")
         return value
 
     def validate_parent_phoneNumber(self, value):
-        if not value.isdigit() or len(value) == 11:
+        if not value.isdigit() or len(value) != 11:
             raise serializers.ValidationError("Enter a valid parent phone number.")
         return value
 
@@ -126,6 +125,6 @@ class UpdateStudentSerializer(serializers.ModelSerializer):
         fields += read_only_fields
 
     def validate_parent_phoneNumber(self, value):
-        if not value.isdigit() or len(value) == 11:
+        if not value.isdigit() or len(value) != 11:
             raise serializers.ValidationError("Enter a valid parent phone number.")
         return value
